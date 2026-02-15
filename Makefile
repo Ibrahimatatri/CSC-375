@@ -1,7 +1,7 @@
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Wextra -pedantic -O2
 
-SRC = src/main.cpp src/HashTable.cpp src/Feedback.cpp
+SRC = src/main.cpp src/HashTable.cpp src/Feedback.cpp src/WordList.cpp
 OUT = wordle
 
 all: $(OUT)
