@@ -1,14 +1,13 @@
-name: Build Check
+CXX = g++
+CXXFLAGS = -std=c++17 -Wall -Wextra -pedantic -O2
 
-on: [push, pull_request]
+SRC = src/main.cpp src/HashTable.cpp
+OUT = wordle
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+all: $(OUT)
 
-    steps:
-      - uses: actions/checkout@v3
+$(OUT): $(SRC)
+	$(CXX) $(CXXFLAGS) $(SRC) -o $(OUT)
 
-      - name: Compile Project
-        run: make
-
+clean:
+	rm -f $(OUT)
