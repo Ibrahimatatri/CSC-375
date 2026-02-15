@@ -1,26 +1,38 @@
 #include <iostream>
 #include "Feedback.h"
+#include "WordList.h"
 
 using namespace std;
 
 int main() {
-    cout << "Feedback demo:\n";
+    WordList wl = loadWordList("data/wordlist.txt");
+    cout << "Loaded words: " << wl.count << "\n";
 
-    string secret = "cigar";
-    string guess  = "crane";
+    string guess, fb;
+    cout << "Enter guess (5 letters): ";
+    cin >> guess;
+    cout << "Enter feedback (5 chars using G/Y/B): ";
+    cin >> fb;
 
-    string fb = Feedback::grade(guess, secret);
+    int kept = 0;
+    for (int i = 0; i < wl.count; i++) {
+        if (Feedback::matches(guess, fb, wl.words[i])) {
+            kept++;
+        }
+    }
 
-    cout << "Secret: " << secret << "\n";
-    cout << "Guess : " << guess << "\n";
-    cout << "FB    : " << fb << "\n";
+    cout << "Candidates remaining: " << kept << "\n";
+    cout << "First up to 20 candidates:\n";
 
-    cout << "matches(guess, fb, secret): "
-         << (Feedback::matches(guess, fb, secret) ? "true" : "false") << "\n";
-
-    cout << "matches(guess, fb, 'crown'): "
-         << (Feedback::matches(guess, fb, "crown") ? "true" : "false") << "\n";
+    int printed = 0;
+    for (int i = 0; i < wl.count && printed < 20; i++) {
+        if (Feedback::matches(guess, fb, wl.words[i])) {
+            cout << wl.words[i] << "\n";
+            printed++;
+        }
+    }
 
     return 0;
 }
+
 
