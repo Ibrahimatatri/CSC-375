@@ -1,18 +1,26 @@
 #include <iostream>
-#include "HashTable.h"
+#include "Feedback.h"
+
+using namespace std;
 
 int main() {
-    HashTable ht;
+    cout << "Feedback demo:\n";
 
-    std::cout << "HashTable demo:\n";
-    std::cout << "Insert 'crane': " << (ht.insert("crane") ? "true" : "false") << "\n";
-    std::cout << "Insert 'crane' again: " << (ht.insert("crane") ? "true" : "false") << "\n";
-    std::cout << "Contains 'crane': " << (ht.contains("crane") ? "true" : "false") << "\n";
-    std::cout << "Remove 'crane': " << (ht.remove("crane") ? "true" : "false") << "\n";
-    std::cout << "Contains 'crane' after remove: " << (ht.contains("crane") ? "true" : "false") << "\n";
+    string secret = "cigar";
+    string guess  = "crane";
 
-    std::cout << "Size: " << ht.size() << ", Capacity: " << ht.capacity()
-              << ", LoadFactor: " << ht.loadFactor() << "\n";
+    string fb = Feedback::grade(guess, secret);
+
+    cout << "Secret: " << secret << "\n";
+    cout << "Guess : " << guess << "\n";
+    cout << "FB    : " << fb << "\n";
+
+    cout << "matches(guess, fb, secret): "
+         << (Feedback::matches(guess, fb, secret) ? "true" : "false") << "\n";
+
+    cout << "matches(guess, fb, 'crown'): "
+         << (Feedback::matches(guess, fb, "crown") ? "true" : "false") << "\n";
 
     return 0;
 }
+
