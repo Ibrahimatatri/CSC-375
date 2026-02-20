@@ -9,5 +9,8 @@ all: $(OUT)
 $(OUT): $(SRC)
 	$(CXX) $(CXXFLAGS) $(SRC) -o $(OUT)
 
+test: tests/TestRunner.cpp src/HashTable.cpp src/Feedback.cpp src/WordList.cpp
+	$(CXX) $(CXXFLAGS) tests/TestRunner.cpp src/HashTable.cpp src/Feedback.cpp src/WordList.cpp -o test_runner
+	./test_runner
 clean:
-	rm -f $(OUT)
+	rm -f $(OUT) test_runner
