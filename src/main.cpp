@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 #include "Feedback.h"
 #include "WordList.h"
 #include "DecisionTree.h"
@@ -6,58 +7,124 @@
 
 using namespace std;
 
+static bool validFeedback(const string& fb) {
+    if (fb.size() != 5) return false;
+    for (char c : fb) {
+        if (c != 'G' && c != 'Y' && c != 'B') return false;
+    }
+    return true;
+}
+
 int main() {
     WordList wl = loadWordList("data/wordlist.txt");
     cout << "Loaded words: " << wl.count << "\n";
 
-    string guess, fb;
-    cout << "Enter guess (5 letters): ";
-    cin >> guess;
-    cout << "Enter feedback (5 chars using G/Y/B): ";
-    cin >> fb;
-
     DecisionTree tree;
-    tree.setRoot(guess, fb);
+    bool hasRoot = false;
+    string lastRoundLabel;
 
-    int kept = 0;
+    string* currentCandidates = new string[wl.count];
+    int currentCount = wl.count;
     for (int i = 0; i < wl.count; i++) {
-        if (Feedback::matches(guess, fb, wl.words[i])) {
-            kept++;
-        }
+        currentCandidates[i] = wl.words[i];
     }
 
-    cout << "Candidates remaining: " << kept << "\n";
-    cout << "First up to 20 candidates:\n";
+    int round = 1;
+    while (true) {
+        string guess;
+        cout << "\nRound " << round << "\n";
+        cout << "Enter guess (5 letters) or 'exit': ";
+        if (!(cin >> guess)) break;
 
-    string* filtered = new string[kept];
-    int index = 0;
-    int printed = 0;
+        if (guess == "exit") {
+            cout << "Exiting solver.\n";
+            break;
+        }
 
-    for (int i = 0; i < wl.count; i++) {
-        if (Feedback::matches(guess, fb, wl.words[i])) {
-            filtered[index] = wl.words[i];
+        if (guess.size() != 5) {
+            cout << "Guess must be exactly 5 letters.\n";
+            continue;
+        }
 
-            if (printed < 20) {
-                cout << wl.words[i] << "\n";
-                printed++;
+        string fb;
+        cout << "Enter feedback (5 chars using G/Y/B): ";
+        if (!(cin >> fb)) break;
+
+        if (!validFeedback(fb)) {
+            cout << "Feedback must be exactly 5 chars using only G, Y, B.\n";
+            continue;
+        }
+
+        string roundLabel = "Round " + to_string(round) + ": " + guess + " (Feedback: " + fb + ")";
+        if (!hasRoot) {
+            tree.setRoot(roundLabel, "");
+            hasRoot = true;
+        } else {
+            if (!tree.addRoundNode(lastRoundLabel, roundLabel)) {
+                tree.addChildToRoot(roundLabel, "");
             }
-
-            index++;
         }
-    }
+        lastRoundLabel = roundLabel;
 
-    if (kept > 0) {
-        string nextGuess = Solver::bestGreedyGuess(filtered, kept);
-        cout << "\nGreedy suggested next guess: " << nextGuess << "\n";
+        int kept = 0;
+        for (int i = 0; i < currentCount; i++) {
+            if (Feedback::matches(guess, fb, currentCandidates[i])) {
+                kept++;
+            }
+        }
 
-        tree.addChildToRoot(nextGuess, "next");
-        cout << "\nDecision tree preview:\n";
+        string* filtered = nullptr;
+        if (kept > 0) {
+            filtered = new string[kept];
+            int idx = 0;
+            for (int i = 0; i < currentCount; i++) {
+                if (Feedback::matches(guess, fb, currentCandidates[i])) {
+                    filtered[idx++] = currentCandidates[i];
+                }
+            }
+        }
+
+        delete[] currentCandidates;
+        currentCandidates = filtered;
+        currentCount = kept;
+
+        cout << "Candidates remaining: " << currentCount << "\n";
+        cout << "First up to 10 candidates:\n";
+        for (int i = 0; i < currentCount && i < 10; i++) {
+            cout << currentCandidates[i] << "\n";
+        }
+
+        if (fb == "GGGGG") {
+            cout << "\nSolved! Nice work.\n";
+            break;
+        }
+
+        if (currentCount == 0) {
+            cout << "\nNo valid candidates remain. Stopping.\n";
+            break;
+        }
+
+        string greedyGuess = Solver::bestGreedyGuess(currentCandidates, currentCount);
+        string backtrackingGuess = Solver::bestBacktrackingGuess(currentCandidates, currentCount);
+
+        cout << "\nGreedy suggested next guess: " << greedyGuess << "\n";
+        cout << "Backtracking suggested next guess: " << backtrackingGuess << "\n";
+
+        tree.addSuggestionNode(lastRoundLabel, "Greedy Suggestion: " + greedyGuess);
+        tree.addSuggestionNode(lastRoundLabel, "Backtracking Suggestion: " + backtrackingGuess);
+
+        cout << "\nDecision tree so far:\n";
         tree.printTree();
-    } else {
-        cout << "\nNo valid candidates found.\n";
+
+        round++;
     }
 
-    delete[] filtered;
+    if (hasRoot) {
+        cout << "\nFinal decision tree:\n";
+        tree.printTree();
+    }
+
+    delete[] currentCandidates;
 
     return 0;
 }
