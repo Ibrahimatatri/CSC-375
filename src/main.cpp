@@ -4,6 +4,7 @@
 #include "WordList.h"
 #include "DecisionTree.h"
 #include "Solver.h"
+#include "HashTable.h"
 
 using namespace std;
 
@@ -88,6 +89,16 @@ int main() {
         currentCandidates = filtered;
         currentCount = kept;
 
+        // store candidates in HashTable for fast lookup
+        HashTable candidateTable;
+        for (int i = 0; i < currentCount; i++) {
+            candidateTable.insert(currentCandidates[i]);
+        }
+        if (currentCount > 0) {
+            cout << "HashTable check (example): contains '" << currentCandidates[0] << "' = "
+                 << (candidateTable.contains(currentCandidates[0]) ? "true" : "false") << endl;
+        }
+
         cout << "Candidates remaining: " << currentCount << "\n";
         cout << "First up to 10 candidates:\n";
         for (int i = 0; i < currentCount && i < 10; i++) {
@@ -128,3 +139,4 @@ int main() {
 
     return 0;
 }
+
